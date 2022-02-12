@@ -1,0 +1,52 @@
+<form version="1.1>
+  <label>Recent Elevations</label>
+  <fieldset submitButton="false">
+    <input type="time" token="timePicker1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Recent self-elevations</title>
+      <table>
+        <search>
+          <query>sourcetype=ivanti:amc EventDefinitionFk=9023 | table time, UserName, NetBiosName, FilePath, Reason | rename UserName as User, NetBiosName as Computer, FilePath as "File Path"</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">25</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Recent automatic elevations</title>
+      <table>
+        <search>
+          <query>sourcetype=ivanti:amc EventDefinitionFk=9018 | table _time, UserName, NetBiosName, FilePath, RuleName | rename UserName as User, NetBiosName as Computer, FilePath as "File Path", RuleName as "Rule Name"</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">25</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

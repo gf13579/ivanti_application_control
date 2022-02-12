@@ -1,0 +1,95 @@
+<form version="1.1>
+  <label>Recent Blocks</label>
+  <fieldset submitButton="false">
+    <input type="time" token="timePicker1">
+      <label></label>
+      <default>
+        <earliest>@w0</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="blockType" searchWhenChanged="true">
+      <label>Block Type</label>
+      <choice value="(All)">(All)</choice>
+      <choice value="Restricted">Restricted</choice>
+      <choice value="Audit">Audit</choice>
+      <default>(All)</default>
+      <initialValue>(All)</initialValue>
+    </input>
+    <input type="dropdown" token="deploymentGroupFilter">
+      <label>Deployment Group</label>
+      <choice value="*">(All)</choice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <fieldForLabel>GroupName</fieldForLabel>
+      <fieldForValue>GroupName</fieldForValue>
+      <search>
+        <query>sourcetype=ivanti:amc:machines | top GroupName limit=0</query>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="bunit">
+      <label>Business Unit</label>
+      <choice value="(All)">(All)</choice>
+      <default>(All)</default>
+      <initialValue>(All)</initialValue>
+      <fieldForLabel>user_bunit</fieldForLabel>
+      <fieldForValue>user_bunit</fieldForValue>
+      <search>
+        <query>sourcetype=ivanti:amc | top user_bunit | table user_bunit</query>
+        <earliest>-7d@h</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+    <input type="dropdown" token="EventType" searchWhenChanged="true">
+      <label>Event Type</label>
+      <choice value="9000">Blocked file</choice>
+      <choice value="9023">Self-Elevated file</choice>
+      <choice value="9018">Elevated file</choice>
+      <choice value="9015">Allowed file</choice>
+      <choice value="*">(All)</choice>
+      <default>9000</default>
+      <initialValue>9000</initialValue>
+    </input>
+    <input type="text" token="EntireEventFilter">
+      <label>Entire Event Filter</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="text" token="FilePathFilter">
+      <label>File Path Filter</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+    <input type="text" token="excludeFilter">
+      <label>File Path Exclude Filter</label>
+      <default>*replace-this-text*</default>
+      <initialValue>*replace-this-text*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=$EventType$ (GroupName="$deploymentGroupFilter$") $EntireEventFilter$ FilePath=$FilePathFilter$ 
+| where (("$blockType$"="(All)") OR (BlockType = "$blockType$")) | sort -_time 
+| `Apply_Env_Vars(FilePath)` 
+| search (NOT FilePath=$excludeFilter$) | where (("$bunit$"="(All)") OR (user_bunit="$bunit$"))
+| table _time, UserName, NetBiosName, GroupName, FilePath, Vendor, ProductName, AuditOnly 
+| rename UserName as User, NetBiosName as Computer, GroupName as "Deployment Group", FilePath AS "File Path", ProductName as "Product", AuditOnly as "Audit Only"</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">25</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

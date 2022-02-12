@@ -1,0 +1,22 @@
+ivanti_application_control
+----------------------------
+
+       Original Author: Greg Ford
+       Current maintainers: Greg Ford
+       Version/Date: 1.1.0 / Feb 12, 2022
+       Sourcetype: ivanti:amc
+       Has index-time ops: false
+
+Update History
+----------------------------
+       1.1.0 Feb 12, 2022
+       --------
+       Adding 'version = "1.1" for Splunk Cloud's JQuery requirement.
+
+       1.0.1 Feb 22, 2018
+       --------
+       Minor dashboard improvements.
+
+       1.0.0 Feb 6, 2018
+       --------
+       First release.

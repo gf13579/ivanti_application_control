@@ -1,0 +1,56 @@
+<form version="1.1>
+  <label>Frequently Blocked Files</label>
+  <fieldset submitButton="false">
+    <input type="dropdown" searchWhenChanged="true" token="blockType">
+      <label>Block Type</label>
+      <choice value="(All)">(All)</choice>
+      <choice value="Restricted">Restricted</choice>
+      <choice value="Audit">Audit</choice>
+      <default>(All)</default>
+      <initialValue>(All)</initialValue>
+    </input>
+    <input type="time" token="dateFilter1">
+      <label>Time Range</label>
+      <default>
+        <earliest>@w0</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="text" token="excludeFilter">
+      <label>Exclude Filter</label>
+      <default>*replace-this-text*</default>
+      <initialValue>*replace-this-text*</initialValue>
+    </input>
+    <input type="text" token="includeFilter">
+      <label>Include Filter</label>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=9000 $includeFilter$ (NOT $excludeFilter$) | where (("$blockType$"="(All)") OR (BlockType = "$blockType$"))
+| fillnull value="Not signed" Vendor 
+| fillnull value="No Product Name" ProductName 
+| fillnull value="No Company Name" CompanyName 
+| `Apply_Env_Vars(FilePath)` 
+| stats max(_time), latest(UserName), dc(UserName) by FilePath, Vendor, ProductName, CompanyName, Hash | rename max(_time) AS MostRecent | convert timeformat="%m-%d-%Y %H:%M:%S" ctime(MostRecent) AS MostRecent
+| table dc(UserName), latest(UserName), MostRecent, FilePath, Vendor, ProductName, CompanyName, Hash 
+| rename dc(UserName) AS "# Users", ProductName as "Product Name", FilePath as "File Path", CompanyName as "Company Name", MostRecent AS "Most Recent Block",  latest(UserName) AS "Most Recent User"
+| sort - "# Users"</query>
+          <earliest>$dateFilter1.earliest$</earliest>
+          <latest>$dateFilter1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,182 @@
+<form version="1.1>
+  <label>Blocked File Analysis</label>
+  <fieldset submitButton="false">
+    <input type="dropdown" token="blockType" searchWhenChanged="true">
+      <label>Block Type</label>
+      <choice value="(All)">(All)</choice>
+      <choice value="Restricted">Restricted</choice>
+      <choice value="Audit">Audit</choice>
+      <default>(All)</default>
+      <initialValue>(All)</initialValue>
+    </input>
+    <input type="time" token="timePicker1">
+      <label>Time Period</label>
+      <default>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Most commonly blocked files - by user count</title>
+      <table>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=9000 | where (("$blockType$"="(All)") OR (BlockType = "$blockType$"))
+| fillnull value="Not signed" Vendor 
+| fillnull value="No Product Name" ProductName 
+| stats dc(UserName) as Users by FileName, Vendor, ProductName
+| sort -Users limit=10</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Most blocked file path</title>
+      <table>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=9000 | where (("$blockType$"="(All)") OR (BlockType = "$blockType$"))
+| `Apply_Env_Vars(FilePath)`
+| top limit=10 FilePath showperc=f</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Most blocked from Downloads folder</title>
+      <table>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=9000 FilePath="*\\Downloads\\*" | where (("$blockType$"="(All)") OR (BlockType = "$blockType$")) 
+| fillnull value="Not signed" Vendor 
+| fillnull value="No Product Name" ProductName 
+| eval combo=FileName." (".Vendor.", ".ProductName.")" 
+| top combo showperc=f | rename combo as File</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <title>Most blocked files on removable media and network shares</title>
+      <table>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=9000 FilePath!="c:\*" | where (("$blockType$"="(All)") OR (BlockType = "$blockType$"))
+| fillnull value="Not signed" Vendor 
+| fillnull value="No Product Name" ProductName 
+| stats dc(UserName) as Users by FilePath, Vendor, ProductName
+| sort -Users limit=10</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Application blocks by deployment group</title>
+      <chart>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=9000 
+| where (("$blockType$"="(All)") OR (BlockType = "$blockType$")) 
+| top GroupName</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">bar</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Most blocks by business area</title>
+      <chart>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=9000 
+| where (("$blockType$"="(All)") OR (BlockType = "$blockType$")) 
+| fillnull value="Not available" user_bunit 
+| top user_bunit</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Rarest blocked file name</title>
+      <table>
+        <search>
+          <query>sourcetype="ivanti:amc" EventDefinitionFk=9000 | where (("$blockType$"="(All)") OR (BlockType = "$blockType$")) | rare FileName, ProductName, Vendor showperc=f limit=0 | rename count as Count, FileName as File, ProductName as Product</query>
+          <earliest>$timePicker1.earliest$</earliest>
+          <latest>$timePicker1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>

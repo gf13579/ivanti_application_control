@@ -1,0 +1,27 @@
+<nav search_view="search" color="#C25153">
+  <view name="overview" default='true' />
+  
+  <collection label="Investigation">
+  <view name="recent_blocks" />
+  <view name="search"/>
+</collection>   
+  
+  <collection label="Analysis">
+	<view name="frequently_blocked_files" />
+    <view name="blocked_file_analysis" />
+	<view name="application_usage" />
+</collection>
+    
+<collection label="Privilege Management">
+    <view name="privilege_management" />
+    <view name="recent_elevations" />
+</collection>
+    
+    
+<collection label="Advanced">
+    <view name="search"/>
+    <view name="reports" />
+    <view name="alerts" />
+	<view name="dashboards" />
+</collection>
+</nav>
